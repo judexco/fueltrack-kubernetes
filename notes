@@ -1,0 +1,361 @@
+kubectl get: List resources in a specified namespace or across all namespaces. For example, kubectl get pods will list all pods in the current namespace.
+
+kubectl describe: Show details about a specified resource. For example, kubectl describe pod <pod-name> will show details about a specific pod.
+
+kubectl create: Create a resource from a YAML file or a JSON file. For example, kubectl create -f deployment.yaml will create a deployment from the YAML file specified.
+
+kubectl apply: Apply changes to a resource from a YAML file or a JSON file. For example, kubectl apply -f deployment.yaml will apply changes to a deployment from the YAML file specified.
+
+kubectl delete: Delete a specified resource. For example, kubectl delete pod <pod-name> will delete the specified pod.
+
+kubectl exec: Execute a command in a container of a specified pod. For example, kubectl exec -it <pod-name> -- /bin/bash will open a bash shell inside the specified pod.
+
+kubectl logs: Print logs for a specified container in a pod. For example, kubectl logs <pod-name> -c <container-name> will print logs for the specified container in the specified pod.
+
+kubectl port-forward: Forward a local port to a port on a specified pod. For example, kubectl port-forward <pod-name> <local-port>:<remote-port> will forward traffic from the specified local port to the specified remote port on the specified pod.
+
+kubectl rollout: Manage rollouts of a specified deployment. For example, kubectl rollout status deployment/<deployment-name> will show the status of a specified deployment rollout.
+
+kubectl config: Manage Kubernetes configuration settings. For example, kubectl config use-context <context-name> will switch the current context to the specified context.
+
+
+
+
+
+
+
+
+# Warning  Failed     13s (x4 over 117s)  kubelet            Failed to pull image "fueltrack": rpc error: code = Unknown desc = Error response from daemon: pull access denied for fueltrack, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+
+step 1: minikube ssh docker pull hasino2258/fueltrack:v2
+
+step 2: create your deployment
+step 3:create your services
+
+
+fueltrack-configmap
+apt-get update -y
+apt-get install -y iputils-ping
+
+
+kubectl config set-context --current --namespace=fueltrack
+172-17-0-17
+
+
+kubectl exec -it mysql-depl-688c748864-svph9 -- /bin/bash
+
+kubectl exec -it <mysql-pod-name> -- top
+kubectl exec -it mysql-depl-688c748864-svph9 -- top
+mysql -u hassan -p
+
+
+GRANT ALL PRIVILEGES ON *.* TO 'hassplsan'@'fueltrack-service' IDENTIFIED BY 'hassan';
+
+ALTER USER 'hassan'@'fueltrack-service' IDENTIFIED WITH mysql_native_password BY 'hassan';
+
+kubectl delete --all pods,services,deployments --namespace=my
+
+kubectl delete all --all -n fueltrack
+
+CREATE USER 'hassan'@'fueltrack-service' IDENTIFIED BY 'passpass';
+
+
+mysql -u root -p
+
+
+apiVersion: apps/v1pls
+kind: Deployment
+metadata:
+  name: mysql-depl
+  namespace: fueltrack # namespace specified here
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.7
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpassword
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+        env:
+
+        - name: MYSQL_DATABASE
+          value: fueltrack
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_USER
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:pls
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+
+        ports:
+        - containerPort: 3306
+
+---
+
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: mysql
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+  clusterIP: None
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: mysql-service
+# spec:
+#   selector:
+#     app: mysql
+#   ports:
+#   - name: mysql
+#     port: 3306
+#     targetPort: 3306
+#   type: ClusterIP
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: mysql-service
+# spec:
+#   selector:
+#     app: mysql
+#   ports:
+#     # - protocol: TCP
+#     port: 3306
+#     targetPort: 3306
+
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-depl
+  namespace: fueltrack # namespace specified here
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.7pls
+        env:
+        - name: MYSQL_DATABASE
+          value: fueltrack
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_USER
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql # mount path in the container
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc # name of the persistent volume claim
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# pipeline {
+#   environment {
+#     dockerimagename = "hasino2258/fueltrack:2.1"
+#     dockerImage = ""
+#   }
+#   agent anypls
+#   stages {
+#     // stage('Change owner of Jenkins home directory') {
+#     //   steps {
+#     //     sh 'sudo chown -R $USER:$USER /var/jenkins_home'
+#     //   }
+#     // }
+#     stage('Checkout Source') {
+#       steps {
+#         git 'https://github.com/hasin0/fueltrack-k8s.git'
+#       }pls
+#     }
+#     stage('Build image') {
+#       steps{
+#         script {
+#           dockerImage = docker.build dockerimagename
+#         }
+#       }
+#     }
+#     stage('Pushing Image') {
+#       environment {
+#         registryCredential = 'docker-cred'
+#       }
+#       steps{
+#         script {
+#           docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
+#             dockerImage.push("latest")
+#           }
+#         }
+#       }
+#     }
+#     stage('Deploying App to Kubernetes') {
+#       steps {
+#         script {
+#           kubernetesDeploy(configs: "fueltrack-depl.yaml", serviceName: "fueltrack-service")
+#         }
+#       }
+#     }
+#   }
+# }
+
+
+
+
+
+# pipeline {
+#   agent any
+#   environment {
+#     DOCKER_REGISTRY = 'myregistry.com'
+#     DOCKER_REPO = 'myrepo'
+#     DOCKER_TAG = 'latest'
+#     DOCKER_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${DOCKER_TAG}"
+#   }
+#   stages {
+#     stage('Checkout') {
+#       steps {
+#         git 'https://github.com/myorg/myrepo.git'
+#       }
+#     }
+#     stage('Build Docker image') {
+#       steps {
+#         sh 'docker build -t ${DOCKER_IMAGE} .'
+#       }
+#     }pls
+#     stage('Push Docker image') {
+#       steps {
+#         withCredentials([usernamePassword(credentialsId: 'myregistry-creds', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+#           sh "docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+#           sh "docker push ${DOCKER_IMAGE}"
+#         }
+#       }
+#     }
+#   }
+# }
+
+
+
+# pipeline {
+#   agent any
+#   options {
+#     buildDiscarder(logRotator(numToKeepStr: '5'))
+#   }
+#   environment {
+#     DOCKERHUB_CREDENTIALS = credentials('docker-cred')
+      # dockerimagename = "hasino2258/fueltrack:2.1"
+      # dockerImage = ""
+#   }
+#   stages {
+#     stage('Build') {
+#       steps {
+#         sh 'docker build -t lloydmatereke/jenkins-docker-hub .'
+#       }
+#     }
+#     stage('Login') {
+#       steps {
+#         sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+#       }
+#     }
+#     stage('Push') {
+#       steps {
+#         sh 'docker push lloydmatereke/jenkins-docker-hub'
+#       }
+#     }
+#   }
+#   post {
+#     always {
+#       sh 'docker logout'
+#     }
+#   }
+# }
+
+
+
+kubectl cluster-info
+
+
+Kubernetes control plane is running at https://192.168.49.2:8443
+
+
+kubectl port-forward svc/argocd-server -n argocd 8181:443
+kubectl cp -R  /var/www/html/fueltrack/storage fueltrack-deployment-84d95fcd7d-brjh4:/var/www/html/fueltrack/storage
+
+kubectl cp  /var/www/html/fueltrack/storage fueltrack-deployment-8458c7f6d5-4n7dv:/var/www/html/fueltrack
+
+
+chmod -R o+rw /var/www/html/fueltrack/storage
+chmod -R o+rw /var/www/html/fueltrack/bootstrap
+chmod -R o+rw /var/www/html/fueltrack/public
+chmod -R o+rw /var/www/html/fueltrack/config
+fueltrack-deployment-6644f54cdf-tdk8p:/var/www/html/fueltrack
